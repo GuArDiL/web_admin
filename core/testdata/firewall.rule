@@ -1,0 +1,6 @@
+id,s_ip,s_port,d_ip,d_port,action,timestamp,source
+20003,10.0.0.2,80,any,any,accept,09-22 16:55:45,manual
+20012,10.0.0.2,33654,any,any,drop,09-23 00:31:08,manual
+20010,10.0.0.2,33654,any,any,drop,09-22 17:04:32,manual
+20011,10.0.0.1,any,10.0.0.2,any,drop,09-22 17:04:47,manual
+10001,10.0.0.2,any,10.0.0.3,135,redirect,09-16 20:00:00,initial

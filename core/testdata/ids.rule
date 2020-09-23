@@ -1,0 +1,6 @@
+label,action
+DOS,drop
+R2L,redirect
+U2R,redirect
+PROBING,alert
+SAFE,NOACTION
