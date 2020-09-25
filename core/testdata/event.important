@@ -1,11 +1,11 @@
 event,timestamp,reporter
-new rule|100008|redirect|10.0.0.2:any|any:any,09-13 20:45:42,firewall
+new rule|10008|redirect|10.0.0.2:any|any:any,09-13 20:45:42,firewall
 packet in,09-13 20:45:40,firewall
-new rule|100007|drop|10.0.0.1:445|any:any,09-13 20:45:36,firewall
+new rule|10007|drop|10.0.0.1:445|any:any,09-13 20:45:36,firewall
 alert|10.0.0.1:445|DOS,09-13 20:45:33,ids
 packet in,09-13 20:18:15,firewall
-new rule|100006|redirect|10.0.0.3:37411|10.0.0.1:80,09-13 20:18:04,firewall
+new rule|10006|redirect|10.0.0.3:37411|10.0.0.1:80,09-13 20:18:04,firewall
 alert|10.0.0.3:37411|R2L,09-13 20:18:01,ids
-new rule|100005|drop|10.0.0.3:37425|10.0.0.1:80,09-13 20:12:16,firewall
+new rule|10005|drop|10.0.0.3:37425|10.0.0.1:80,09-13 20:12:16,firewall
 alert|10.0.0.3:37425|R2L,09-13 20:12:15,ids
-new rule|100005|drop|10.0.0.4:any|10.0.0.1:80,09-13 20:12:12,firewall
+new rule|10005|drop|10.0.0.4:any|10.0.0.1:80,09-13 20:12:12,firewall

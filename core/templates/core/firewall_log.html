@@ -193,7 +193,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         {% elif log.event.type == "match rule" %}
                           <td>匹配规则 [{{ log.event.rid }}] 成功</td>
                         {% elif log.event.type == "packet in" %}
-                          <td>Packet-In！应用防火墙规则至交换机流表项</td>
+                          <td>Packet-In！</td>
                         {% elif log.event.type == "alert" %}
                           <td>收到 IDS 告警，检测到 {{ log.event.attack_type }} 威胁</td>
                         {% endif %}

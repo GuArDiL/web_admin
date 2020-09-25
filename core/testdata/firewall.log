@@ -1,19 +1,19 @@
-event,s_ip,s_port,d_ip,d_port,action,timestamp,pkt_id
+event,s_ip,s_port,d_ip,d_port,action,timestamp
 alert|DOS,10.0.0.1,445,10.0.0.2,80,,09-16 20:00:00
-remove rule|100001|auto,10.0.0.1,445,10.0.0.2,any,drop,09-16 20:00:00
-new rule|100006|auto,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:02
-remove rule|100006|manual,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:04
-new rule|100007|manual,10.0.0.1,any,10.0.0.2,any,redirect,09-16 20:00:04
+remove rule|10001|auto,10.0.0.1,445,10.0.0.2,any,drop,09-16 20:00:00
+new rule|10006|auto,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:02
+remove rule|10006|manual,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:04
+new rule|10007|manual,10.0.0.1,any,10.0.0.2,any,redirect,09-16 20:00:04
 packet in,10.0.0.1,3345,10.0.0.2,80,,09-16 20:00:10,2001
-match rule|100003,10.0.0.1,any,10.0.0.2,80,drop,09-16 20:00:12
-match rule|100003,10.0.0.1,any,10.0.0.2,80,accept,09-16 20:00:12
-packet in,10.0.0.1,3345,10.0.0.2,80,,09-16 20:00:10,2001
-alert|DOS,10.0.0.1,445,10.0.0.2,80,,09-16 20:00:00
-remove rule|100001|auto,10.0.0.1,445,10.0.0.2,any,drop,09-16 20:00:00
-new rule|100006|auto,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:02
-match rule|100003,10.0.0.1,any,10.0.0.2,80,drop,09-16 20:00:12
-match rule|100003,10.0.0.1,any,10.0.0.2,80,accept,09-16 20:00:12
+match rule|10003,10.0.0.1,any,10.0.0.2,80,drop,09-16 20:00:12
+match rule|10003,10.0.0.1,any,10.0.0.2,80,accept,09-16 20:00:12
 packet in,10.0.0.1,3345,10.0.0.2,80,,09-16 20:00:10,2001
 alert|DOS,10.0.0.1,445,10.0.0.2,80,,09-16 20:00:00
-remove rule|100001|auto,10.0.0.1,445,10.0.0.2,any,drop,09-16 20:00:00
-new rule|100006|auto,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:02
+remove rule|10001|auto,10.0.0.1,445,10.0.0.2,any,drop,09-16 20:00:00
+new rule|10006|auto,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:02
+match rule|10003,10.0.0.1,any,10.0.0.2,80,drop,09-16 20:00:12
+match rule|10003,10.0.0.1,any,10.0.0.2,80,accept,09-16 20:00:12
+packet in,10.0.0.1,3345,10.0.0.2,80,,09-16 20:00:10,2001
+alert|DOS,10.0.0.1,445,10.0.0.2,80,,09-16 20:00:00
+remove rule|10001|auto,10.0.0.1,445,10.0.0.2,any,drop,09-16 20:00:00
+new rule|10006|auto,10.0.0.1,445,10.0.0.2,any,redirect,09-16 20:00:02
