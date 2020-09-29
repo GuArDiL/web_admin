@@ -25,7 +25,7 @@ SECRET_KEY = 'mb84^y(6o6*=-p42q!s3e$_s5wz+q-s1z$2#_y^3)2-&#m4#hi'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['*', '127.0.0.1']
 
 
 # Application definition

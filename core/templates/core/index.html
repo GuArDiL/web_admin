@@ -39,13 +39,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a class="nav-link" href="" role="button" id="home"><i class="fas fa-home"></i></a>
       </li>
     </ul>
-
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href = "javascript:void(0)" role="button"><i class="fas fa-sign-out-alt"></i></a>
-      </li>
-    </ul>
   </nav>
   <!-- /.navbar -->
 
@@ -219,7 +212,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         {% if event.event.type == "new rule" %}
                           <td>新增规则 [{{ event.event.rid }}]: <strong>{{ event.event.action }} {{ event.event.src }} -- {{ event.event.dst }}</strong></td>
                         {% elif event.event.type == "packet in" %}
-                          <td>Packet-In！应用防火墙规则至交换机流表项</td>
+                          <td>Packet-In！</td>
                         {% elif event.event.type == "alert" %}
                           <td>检测到来自 <strong>{{ event.event.src }}</strong> 的 <strong>{{ event.event.attack_type }}</strong> 威胁</td>
                         {% endif %}
@@ -253,37 +246,45 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </p>
 
                 <div class="progress-group">
-                  Denial-of-Service (DOS)
+                  Fuzzers
                   <span class="float-right"><b>{{ threat_type_info.0.0 }}</b>/{{ threat_info }}</span>
                   <div class="progress progress-sm">
-                    <div class="progress-bar bg-primary" style="width: {{ threat_type_info.0.1 }}%"></div>
+                    <div class="progress-bar bg-danger" style="width: {{ threat_type_info.0.1 }}%"></div>
                   </div>
-                </div>
-                <!-- /.progress-group -->
-
+                </div><!-- /.progress-group -->
                 <div class="progress-group">
-                  Remote to Local (R2L)
+                  DoS
                   <span class="float-right"><b>{{ threat_type_info.1.0 }}</b>/{{ threat_info }}</span>
                   <div class="progress progress-sm">
-                    <div class="progress-bar bg-danger" style="width: {{ threat_type_info.1.1 }}%"></div>
+                    <div class="progress-bar bg-primary" style="width: {{ threat_type_info.1.1 }}%"></div>
                   </div>
-                </div>
-
-                <!-- /.progress-group -->
+                </div><!-- /.progress-group -->
                 <div class="progress-group">
-                  User to Root (U2R)
+                  Exploits
                   <span class="float-right"><b>{{ threat_type_info.2.0 }}</b>/{{ threat_info }}</span>
                   <div class="progress progress-sm">
                     <div class="progress-bar bg-success" style="width: {{ threat_type_info.2.1 }}%"></div>
                   </div>
-                </div>
-
-                <!-- /.progress-group -->
+                </div><!-- /.progress-group -->
                 <div class="progress-group">
-                  Surveillance or probe (PROBING)
+                  Generic
                   <span class="float-right"><b>{{ threat_type_info.3.0 }}</b>/{{ threat_info }}</span>
                   <div class="progress progress-sm">
-                    <div class="progress-bar bg-warning" style="width: {{ threat_type_info.3.1 }}%"></div>
+                    <div class="progress-bar bg-orange" style="width: {{ threat_type_info.3.1 }}%"></div>
+                  </div>
+                </div><!-- /.progress-group -->
+                <div class="progress-group">
+                  Reconnaissance
+                  <span class="float-right"><b>{{ threat_type_info.4.0 }}</b>/{{ threat_info }}</span>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-indigo" style="width: {{ threat_type_info.4.1 }}%"></div>
+                  </div>
+                </div><!-- /.progress-group -->
+                <div class="progress-group">
+                  Shellcode
+                  <span class="float-right"><b>{{ threat_type_info.5.0 }}</b>/{{ threat_info }}</span>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-warning" style="width: {{ threat_type_info.5.1 }}%"></div>
                   </div>
                 </div><!-- /.progress-group -->
               </div><!-- /.card-body -->

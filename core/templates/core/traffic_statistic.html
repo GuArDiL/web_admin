@@ -39,13 +39,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a class="nav-link" href="../" role="button" id="home"><i class="fas fa-home"></i></a>
       </li>
     </ul>
-
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href = "javascript:void(0)" role="button"><i class="fas fa-sign-out-alt"></i></a>
-      </li>
-    </ul>
   </nav>
   <!-- /.navbar -->
 
@@ -158,15 +151,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <div class="col-md-12">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">流量分布 (%)</div>
+                <div class="card-title"><b>流量分布 (%)</b></div>
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
                 </div>
               </div><!-- /.card-header -->
               <div class="card-body">
-                <div class="row">
+                <div class="row flex">
                 {% for threat in threats %}
-                  <div class="col-6 col-md-2 text-center">    
+                  <div class="text-center mx-5">    
                     <div style="display:inline;width:90px;height:90px;">
                       <canvas width="112" height="112" style="width: 80px; height: 80px;"
                               class="chart" percent="{{ threat.percent }}" color="{{ threat.color }}"></canvas>
@@ -241,7 +234,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                           {% else %}
                             <td>{{ packet.payload | truncatechars:"45" }}</td>
                             <td>
-                            <small><small><a class="fas fa-ellipsis-h" href="javascript:void(0)" data-toggle="popover"
+                            <small><small><a class="fas fa-ellipsis-h" href="javascript:void(0)" data-toggle="popover" data-trigger="focus"
                                              data-placement="left" data-content="{{ packet.payload }}"></a></small></small>
                             </td>
                           {% endif %}  
@@ -282,8 +275,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="{% static "dist/js/adminlte.min.js" %}"></script>
 <!-- toastr -->
 <script src="{% static "plugins/toastr/toastr.min.js" %}"></script>
-<!-- jQuery Knob -->
-<script src="{% static "/plugins/jquery-knob/jquery.knob.min.js" %}"></script>
 
 <!-- core -->
 <script src="{% static "core.js" %}"></script>

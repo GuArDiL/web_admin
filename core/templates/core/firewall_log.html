@@ -39,13 +39,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a class="nav-link" href="../" role="button" id="home"><i class="fas fa-home"></i></a>
       </li>
     </ul>
-
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href = "javascript:void(0)" role="button"><i class="fas fa-sign-out-alt"></i></a>
-      </li>
-    </ul>
   </nav>
   <!-- /.navbar -->
 
@@ -196,6 +189,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                           <td>Packet-In！</td>
                         {% elif log.event.type == "alert" %}
                           <td>收到 IDS 告警，检测到 {{ log.event.attack_type }} 威胁</td>
+                        {% elif log.event.type == "admin submit" %}
+                          <td>收到管理系统提交的防火墙规则修改，已应用至交换机</td>
                         {% endif %}
                         <td><strong>{{ log.s_ip }}</strong></td>
                         {% if log.s_port == "any" %}

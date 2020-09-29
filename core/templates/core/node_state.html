@@ -73,7 +73,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link dyn-url active" style="background-color:rgba(255,255,255,.05); color:#fff" id="ids_log">
+                <a href="#" class="nav-link dyn-url" id="ids_log">
                   <i class="fas nav-icon"></i>
                   <p>入侵检测日志</p>
                 </a>
@@ -118,7 +118,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link dyn-url" id="node_state">
+            <a href="#" class="nav-link dyn-url active" style="background-color:rgba(255,255,255,.05); color:#fff" id="node_state">
               <i class="nav-icon fas fa-th-list"></i>
               <p>
                 节点状态
@@ -145,70 +145,113 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Content Header (Page header) -->
     <div class="content-header">
       <div class="container-fluid">
+        {% if switches %}
+        <!-- flow entries for each switch -->
+        {% for sid, entries in switches.items %}
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title"><b>交换机 # {{ sid }}</b></div>
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                  </div>
+                </div><!-- /.card-header -->
+                <div class="card-body p-0">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 3rem">table</th>
+                        <th style="width: 4rem">cookie</th>
+                        <th style="width: 6rem">duration</th>
+                        <th style="width: 3rem">n_packets</th>
+                        <th style="width: 5rem">n_bytes</th>
+                        <th style="width: 4rem">priority</th>
+                        <th style="width: 4rem">dl_type</th>
+                        <th style="width: 2rem">nw_proto</th>
+                        <th style="width: 6rem">nw_src</th>
+                        <th style="width: 3rem">tp_src</th>
+                        <th style="width: 6rem">nw_dst</th>
+                        <th style="width: 3rem">tp_dst</th>
+                        <th style="width: 12rem">action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for entry in entries %}
+                        <tr>
+                          <td>{{ entry.table_id }}</td>
+                          <td>0x{{ entry.cookie }}</td>
+                          <td>{{ entry.duration_sec|stringformat:".2f" }} <small>秒</small></td>
+                          <td>{{ entry.packet_count }}</td>
+                          <td>{{ entry.byte_count }}</td>
+                          <td>{{ entry.priority }}</td>
+                          {% if entry.match.dl_type %}
+                            <td>{{ entry.match.dl_type }}</td>
+                          {% else %}
+                            <td><span class="text-info"><b>any</b></span></td>
+                          {% endif %}
+                          {% if entry.match.nw_proto %}
+                            <td>{{ entry.match.nw_proto }}</td>
+                          {% else %}
+                            <td><span class="text-info"><b>any</b></span></td>
+                          {% endif %}
+                          {% if entry.match.nw_src %}
+                            <td>{{ entry.match.nw_src }}</td>
+                          {% else %}
+                            <td><span class="text-info"><b>any</b></span></td>
+                          {% endif %}
+                          {% if entry.match.tp_src %}
+                            <td>{{ entry.match.tp_src }}</td>
+                          {% else %}
+                            <td><span class="text-info"><b>any</b></span></td>
+                          {% endif %}                          
+                          {% if entry.match.nw_dst %}
+                            <td>{{ entry.match.nw_dst }}</td>
+                          {% else %}
+                            <td><span class="text-info"><b>any</b></span></td>
+                          {% endif %}
+                          {% if entry.match.tp_dst %}
+                            <td>{{ entry.match.tp_dst }}</td>
+                          {% else %}
+                            <td><span class="text-info"><b>any</b></span></td>
+                          {% endif %}
+                          <td>
+                            {% for action in entry.actions %}
+                              {% if action == "OUTPUT:CONTROLLER" %}
+                                <b><span class="text-maroon"> {{ action }} <span></b>&nbsp;
+                              {% elif action == "CLEAR_ACTIONS"%}
+                                <b><span class="text-danger"> {{ action }} <span></b>&nbsp;
+                              {% else %}
+                                <b><span> {{ action }} <span></b>&nbsp;
+                              {% endif %}
+                            {% endfor %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div><!-- /.card-body -->
+              </div><!-- /.card -->
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+          {% endfor %}
+        {% else %}
         <div class="row">
           <div class="col-md-12">
             <div class="card text-sm">
               <div class="card-body p-0">
-              {% if logs %}
-                <table class="table table-sm">
-                  <thead>
-                    <tr>
-                      <th style="width: 4rem">ID</th>
-                      <th style="width: 6rem">分类标签</th>
-                      <th style="width: 6rem">源 IP</th>
-                      <th style="width: 6rem">源端口</th>
-                      <th style="width: 6rem">目的 IP</th>
-                      <th style="width: 6rem">目的端口</th>
-                      <th style="width: 6rem">响应策略</th>
-                      <th style="width: 6rem">捕获时间</th>
-                      <th style="width: 4rem"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for log in logs %}
-                      <tr>
-                        <td>{{ log.pkt_id }}</td>
-                        <td><span><strong>{{ log.label }}</strong></span></td>
-                        <td><strong>{{ log.s_ip }}</strong></td>
-                        {% if log.s_port == "any" %}
-                          <td><span class="text-info"><strong>{{ log.s_port }}</strong></span></td>
-                        {% else %}
-                          <td><span><strong>{{ log.s_port }}</strong></span></td>
-                        {% endif %}
-                        <td><strong>{{ log.d_ip }}</strong></td>
-                        {% if log.d_port == "any" %}
-                          <td><span class="text-info"><strong>{{ log.d_port }}</strong></span></td>
-                        {% else %}
-                          <td><span><strong>{{ log.d_port }}</strong></span></td>
-                        {% endif %}
-                        {% if log.strategy == "alert" %}
-                          <td><span class="badge bg-info">告警</span></td>
-                        {% elif log.strategy == "redirect" %}
-                          <td><span class="badge bg-primary">重定向</span></td>
-                        {% elif log.strategy == "drop" %}
-                          <td><span class="badge bg-danger">丢弃</span></td>
-                        {% else %}
-                          <td></td>
-                        {% endif %}
-                        <td>{{ log.timestamp }}</td>
-                        <td><a href="#" class="locate-packet" pkt={{ log.pkt_id }}>查看载荷</a></td>
-                      </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              {% else %}
                 <table class="table">
                   <thead>
                     <tr>
-                      <th style="width:100%">暂无入侵检测事件</th>
+                      <th style="width:100%">未发现交换机节点</th>
                     </tr>
                   </thead>
                 </table>
-              {% endif %}
-              </div><!-- /.card-body -->                        
-            </div><!-- /.card -->
-          </div><!-- /.col -->
-        </div><!-- /.row -->
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
       </div><!-- /.container-fluid -->
     </div><!-- /.content-header -->   
   </div><!-- /.content-wrapper -->
@@ -228,13 +271,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 <!-- core -->
 <script src="{% static "core.js" %}"></script>
-
-<script>
-  // set url for locate-packet
-  $('.locate-packet').click(function() {
-      $(this).attr("href", "/core/traffic_statistic?target=" + $(this).attr('pkt') + "&" + getSidebarState());
-  });
-</script>
 
 </body>
 </html>

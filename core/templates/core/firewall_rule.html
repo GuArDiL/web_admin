@@ -39,13 +39,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a class="nav-link" href="../" role="button" id="home"><i class="fas fa-home"></i></a>
       </li>
     </ul>
-
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href = "javascript:void(0)" role="button"><i class="fas fa-sign-out-alt"></i></a>
-      </li>
-    </ul>
   </nav>
   <!-- /.navbar -->
 
@@ -216,9 +209,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <td><span class="rule-timestamp">{{ rule.timestamp }}</span></td>
                         {% if rule.source == "initial" %}
                           <td><span class="rule-source"><span class="badge bg-info">初始配置</span></span></td>
-                        {% elif rule.source == "auto" %}
+                        {% elif rule.source == "firewall" %}
                           <td><span class="rule-source"><span class="badge bg-maroon">防火墙</span></span></td>
-                        {% elif rule.source == "manual" %}
+                        {% elif rule.source == "admin" %}
                           <td><span class="rule-source"><span class="badge bg-warning">管理系统</span></span></td>
                         {% else %}
                           <td></td>
@@ -336,13 +329,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                       <div class="form-group">
                         <label for="new-rule-action">动作：</label>
                           <div class="btn-group btn-group-toggle input-group" data-toggle="buttons" id="new-rule-action">
-                            <label class="btn btn-outline-danger btn-sm" id="new-rule-drop">
+                            <label class="btn btn-outline-danger btn-sm" id="new-rule-drop" data-action="drop">
                               <input type="radio" autocomplete="off"> 丢弃
                             </label>
-                            <label class="btn btn-outline-primary btn-sm" id="new-rule-redirect">
+                            <label class="btn btn-outline-primary btn-sm" id="new-rule-redirect" data-action="redirect">
                               <input type="radio" autocomplete="off"> 重定向
                             </label>
-                            <label class="btn btn-outline-success btn-sm" id="new-rule-accept">
+                            <label class="btn btn-outline-success btn-sm" id="new-rule-accept" data-action="accept">
                               <input type="radio" autocomplete="off"> 放行
                             </label>
                           </div>
@@ -463,6 +456,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 <script>
   var min_valid_rule_id = -1;
+  var edit_records = [];
   $(function() {    
     // enable help tooltip for management
     $("[data-toggle='tooltip']").tooltip();
@@ -473,6 +467,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
     // set min_valid_rule_id before edition
     min_valid_rule_id = Math.max(getValidRuleID(), 20001);
 
+    // clear edit records
+    edit_records = [];
+
     toastr.options = {positionClass:"toast-bottom-right",
                       timeOut: "1500"};
   });
@@ -482,14 +479,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
     $.ajax({
       type: "POST",
       url: "/core/submit/firewall_rule/",
-      data: JSON.stringify(getFirewallRuleTableData()),
+      data: JSON.stringify({'rules':getFirewallRuleTableData(), 'records':edit_records}),
       beforeSend: function(xhr, settings) {
         xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
       },
       success: function(response) {
         $('#modal-confirm').modal('hide');
         // ajax won't handle redirect, any other method to force a refresh with toastr working well?
-        //window.location.href = "/core/firewall_rule/";
+        //window.location.href = "/core/firewall_rule";
 
         $('#firewall-rule-table tbody tr td:contains("尚未提交")').html("<span class=\"rule-timestamp\">" + response + "</span>");
         $('#submit-modification').attr('disabled', "");
@@ -518,14 +515,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
       let timestamp = $(this).find('.rule-timestamp').text();
       timestamp = timestamp == "尚未提交" ? "NOTIMESTAMP" : timestamp
       let source = $(this).find('.rule-source').text();
-      source = source == "防火墙" ? "auto" : source == "管理系统" ? "manual" : "initial";
+      source = source == "防火墙" ? "firewall" : source == "管理系统" ? "admin" : "initial";
 
       rules.push([id, s_ip, s_port, d_ip, d_port, action, timestamp, source]);
     })
 
     return rules;
   }
-
 
   /* new rule */
   $('#firewall-rule-table').on("click", '.new-rule', function() {
@@ -549,7 +545,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     }
     
     // action is always valid if everything's ok
-    var action = $('#new-rule-action').find('.active').attr('id');
+    var action = $('#new-rule-action').find('.active').data('action');;
 
     // make new rule
     var new_rule_id = $('#new-rule-id').text();
@@ -566,6 +562,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     $('#modal-new-rule').modal('hide');
     $('#submit-modification').removeAttr('disabled');
+    edit_records.push(["new rule", new_rule_over_id, new_rule_id, s_ip, s_port, d_ip, d_port, action]);
     toastr.info("新建规则成功，本次修改尚未提交");
   });
 
@@ -607,6 +604,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     // save initial data for this edit
     init_edit_data = JSON.stringify([old_s_ip, old_s_port, old_d_ip, old_d_port, old_action]);
+    console.log("here")
   });
 
 /*
@@ -643,6 +641,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     $('#modal-edit-rule').modal('hide');
     $('#submit-modification').removeAttr('disabled');
+    edit_records.push(["edit rule", new_rule_over_id, new_rule_id, s_ip, s_port, d_ip, d_port, action]);
     toastr.info("编辑规则成功，本次修改尚未提交");
   });
 
@@ -742,6 +741,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   /* remove rule */
   $('#firewall-rule-table').on("click", '.remove-rule', function() {
     var row = $(this).parent().parent();
+    var remove_rule_id = row.find('.rule-id').text()
 
     // if the first row
     if(row.prev().length == 0) {
@@ -758,12 +758,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
     row.remove();
 
     $('#submit-modification').removeAttr('disabled');
+    edit_records.push(["remove rule", remove_rule_id]);
     toastr.info("删除规则成功，本次修改尚未提交");
   });
 
   /* up rule */
   $('#firewall-rule-table').on("click", '.up-rule', function() {    // $('a').on() or $('.up-rule').on() is invalid
     var row = $(this).parent().parent();
+    var up_rule_id = row.find('.rule-id').text()
     row.insertBefore(row.prev());
     
     // if the second row
@@ -773,6 +775,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     }
 
     $('#submit-modification').removeAttr('disabled');
+    edit_records.push(["up rule", up_rule_id]);
     toastr.info("上移规则成功，本次修改尚未提交");
   });
 

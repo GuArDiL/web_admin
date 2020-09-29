@@ -73,7 +73,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link dyn-url active" style="background-color:rgba(255,255,255,.05); color:#fff" id="ids_log">
+                <a href="#" class="nav-link dyn-url" id="ids_log">
                   <i class="fas nav-icon"></i>
                   <p>入侵检测日志</p>
                 </a>
@@ -126,7 +126,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link dyn-url" id="system_test">
+            <a href="#" class="nav-link dyn-url active" style="background-color:rgba(255,255,255,.05); color:#fff" id="system_test">
               <i class="nav-icon fas fa-wrench "></i>
               <p>
                 系统测试
@@ -145,70 +145,59 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Content Header (Page header) -->
     <div class="content-header">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="card text-sm">
-              <div class="card-body p-0">
-              {% if logs %}
-                <table class="table table-sm">
-                  <thead>
-                    <tr>
-                      <th style="width: 4rem">ID</th>
-                      <th style="width: 6rem">分类标签</th>
-                      <th style="width: 6rem">源 IP</th>
-                      <th style="width: 6rem">源端口</th>
-                      <th style="width: 6rem">目的 IP</th>
-                      <th style="width: 6rem">目的端口</th>
-                      <th style="width: 6rem">响应策略</th>
-                      <th style="width: 6rem">捕获时间</th>
-                      <th style="width: 4rem"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for log in logs %}
-                      <tr>
-                        <td>{{ log.pkt_id }}</td>
-                        <td><span><strong>{{ log.label }}</strong></span></td>
-                        <td><strong>{{ log.s_ip }}</strong></td>
-                        {% if log.s_port == "any" %}
-                          <td><span class="text-info"><strong>{{ log.s_port }}</strong></span></td>
-                        {% else %}
-                          <td><span><strong>{{ log.s_port }}</strong></span></td>
-                        {% endif %}
-                        <td><strong>{{ log.d_ip }}</strong></td>
-                        {% if log.d_port == "any" %}
-                          <td><span class="text-info"><strong>{{ log.d_port }}</strong></span></td>
-                        {% else %}
-                          <td><span><strong>{{ log.d_port }}</strong></span></td>
-                        {% endif %}
-                        {% if log.strategy == "alert" %}
-                          <td><span class="badge bg-info">告警</span></td>
-                        {% elif log.strategy == "redirect" %}
-                          <td><span class="badge bg-primary">重定向</span></td>
-                        {% elif log.strategy == "drop" %}
-                          <td><span class="badge bg-danger">丢弃</span></td>
-                        {% else %}
-                          <td></td>
-                        {% endif %}
-                        <td>{{ log.timestamp }}</td>
-                        <td><a href="#" class="locate-packet" pkt={{ log.pkt_id }}>查看载荷</a></td>
-                      </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              {% else %}
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th style="width:100%">暂无入侵检测事件</th>
-                    </tr>
-                  </thead>
-                </table>
-              {% endif %}
-              </div><!-- /.card-body -->                        
-            </div><!-- /.card -->
-          </div><!-- /.col -->
-        </div><!-- /.row -->
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header d-flex p-0">
+                  <h3 class="card-title p-3"><b> # 测试一：发送非攻击流量</b></h3>
+                  <ul class="nav nav-pills ml-auto p-2">
+                    <button class="btn btn-outline-primary" type="button" id="test1"><small><i class="fas fa-wrench"> 开始测试</i></small></button>
+                  </ul>
+                </div><!-- /.card-header -->
+                <div class="card-body">
+                  <div class="tab-content">
+                    <div class="tab-pane active" id="before-test1">
+                      <div>本测试将在后台执行以下命令，其中test1.pcap文件包含4条非攻击流量：</div>
+                      <div class="text-danger"><b> sudo python dispatcher.py ./pcap/test1.pcap</b></div>
+                    </div><!-- /.tab-pane -->
+                    <div class="tab-pane" id="after-test1">
+                      <div>测试已完成。</div>
+                      <div class="text-danger">可在防火墙日志中查看防火墙动作，在流量统计中查看数据包信息，在节点状态中查看交换机流表项。</div>
+                    </div><!-- /.tab-pane -->
+                  </div>
+                </div><!-- /.card-body -->
+              </div><!-- /.card -->
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header d-flex p-0">
+                  <h3 class="card-title p-3"><b> # 测试二：发送攻击流量</b></h3>
+                  <ul class="nav nav-pills ml-auto p-2">
+                    <button class="btn btn-outline-primary" type="button" id="test2"><small><i class="fas fa-wrench"> 开始测试</i></small></button>
+                  </ul>
+                </div><!-- /.card-header -->
+                <div class="card-body">
+                  <div class="tab-content">
+                    <div class="tab-pane active" id="before-test2">
+                      <div>本测试将在后台执行以下命令，其中test2.pcap文件包含8条攻击流量：</div>
+                      <div class="text-danger"><b> sudo python dispatcher.py ./pcap/test2-dos.pcap</b></div>
+                    </div><!-- /.tab-pane -->
+                    <div class="tab-pane" id="after-test2">
+                      <div>测试已完成。</div>
+                      <div class="text-danger">可在防火墙日志中查看防火墙动作，在入侵检测日志中查看入侵检测器动作，在流量统计中查看数据包信息，在节点状态中查看交换机流表项。</div>                    
+                    </div><!-- /.tab-pane -->
+                  </div>
+                </div><!-- /.card-body -->
+              </div><!-- /.card -->
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+          <div class="row justify-content-center" >
+            <ul class="nav nav-pills p-2">
+              <button class="btn btn-outline-primary" type="button" id="reset"><small><i class="fas fa-redo-alt"> 重启系统</i></small></button>
+            </ul>
+          </div>
       </div><!-- /.container-fluid -->
     </div><!-- /.content-header -->   
   </div><!-- /.content-wrapper -->
@@ -230,11 +219,65 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="{% static "core.js" %}"></script>
 
 <script>
-  // set url for locate-packet
-  $('.locate-packet').click(function() {
-      $(this).attr("href", "/core/traffic_statistic?target=" + $(this).attr('pkt') + "&" + getSidebarState());
+  $(function() {
+    toastr.options = {positionClass:"toast-bottom-right",
+                      timeOut: "1500"};
+  });
+
+  $('#test1').click(function() {
+    $.ajax({
+      type: "POST",
+      url: "/core/test/1/",
+      beforeSend: function(xhr, settings) {
+        xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+      },
+      success: function(response) {
+        $('#test1').attr('disabled', "");
+        $('#before-test1').removeClass('active');
+        $('#after-test1').addClass('active');
+        toastr.success("运行测试一成功");
+      },
+      error: function() {
+        toastr.error("运行测试一失败，请检查服务器状态");
+      }
+    });
+  });
+
+  $('#test2').click(function() {
+    $.ajax({
+      type: "POST",
+      url: "/core/test/2/",
+      beforeSend: function(xhr, settings) {
+        xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+      },
+      success: function(response) {
+        $('#test2').attr('disabled', "");
+        $('#before-test2').removeClass('active');
+        $('#after-test2').addClass('active');
+        toastr.success("运行测试二成功");
+      },
+      error: function() {
+        toastr.error("运行测试二失败，请检查服务器状态");
+      }
+    });
+  });
+
+  $('#reset').click(function() {
+    $.ajax({
+      type: "POST",
+      url: "/core/reset/",
+      beforeSend: function(xhr, settings) {
+        xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+      },
+      success: function(response) {
+        toastr.success("恢复初始配置成功");
+      },
+      error: function() {
+        $('#modal-confirm').modal('hide');
+        toastr.error("恢复初始配置失败，请检查服务器状态");
+      }
+    });
   });
 </script>
-
 </body>
 </html>

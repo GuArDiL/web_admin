@@ -8,13 +8,14 @@
             "name": "Python: Django",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}\\manage.py",
+            "program": "${workspaceFolder}/manage.py",
             "args": [
                 "runserver",
-                "8080",
+                "0.0.0.0:8192",
                 "--noreload"
             ],
-            "django": true
+            "django": true,
+            "sudo": true
         }
     ]
 }

@@ -1,30 +1,60 @@
 from django.shortcuts import render, redirect, HttpResponse
 
 import csv
+import datetime
 
-FILE_BASIC_INFO = "./core/testdata/basic.info"
-FILE_EVENT_IMPORTANT = "./core/testdata/event.important"
-FILE_FIREWALL_LOG = "./core/testdata/firewall.log"
-FILE_IDS_LOG = "./core/testdata/ids.log"
-FILE_FIREWALL_RULE = "./core/testdata/firewall.rule"
-FILE_IDS_RULE = "./core/testdata/ids.rule"
+SOCKFILE_RULE_ALERT = "/tmp/rule.alert"
 
-FILE_PKT_ALL = "./core/testdata/pkt.all"
+SDN_FIREWALL_ROOT = "../SDN-Firewall/"
 
+INTERACT_SHELL_TEST1 = "h2 " + SDN_FIREWALL_ROOT + "test/run.sh test1\n"
+INTERACT_SHELL_TEST2 = "h2 " + SDN_FIREWALL_ROOT + "test/run.sh test2\n"
+SHELL_START_MININET = SDN_FIREWALL_ROOT + "test/run.sh mininet"
+SHELL_START_IDS = SDN_FIREWALL_ROOT + "test/run.sh ids"
+SHELL_RESET = SDN_FIREWALL_ROOT + "test/run.sh reset"
+
+LOG_ROOT = SDN_FIREWALL_ROOT + "log/"
+RULE_ROOT = SDN_FIREWALL_ROOT + "rules/"
+
+FILE_START_TIME = LOG_ROOT + "start.time"
+FILE_EVENT_IMPORTANT = LOG_ROOT + "event.important"
+FILE_FIREWALL_LOG = LOG_ROOT + "firewall.log"
+FILE_IDS_LOG = LOG_ROOT + "ids.log"
+FILE_ADMIN_LOG = LOG_ROOT + "admin.log"
+FILE_PKT_ALL = LOG_ROOT + "pkt.all"
+
+FILE_FIREWALL_RULE = RULE_ROOT + "firewall.rule"
+FILE_IDS_RULE = RULE_ROOT + "ids.rule"
 
 def indexContext():
     context = {}
-    with open(FILE_BASIC_INFO, "r") as f:
-        context["time_info"] = f.readline()
-        context["rule_info"] = f.readline()
-        context["packet_info"] = f.readline()
-        context["threat_info"] = f.readline()
-        context["threat_type_info"] = f.readline().split('|')
-        context["threat_type_info"] = [(i, int(100 * int(i) / int(context['threat_info']))) for i in context["threat_type_info"]]
+    with open(FILE_START_TIME, "r") as f:
+        context['time_info'] = f.readline()
+    # context["rule_info"] = f.readline()
+    pkts, threats = statistic()
+    context['packet_info'] = len(pkts)
+    
+    total = 0
+    for threat in threats:
+        if threat['type'] != 'Normal':
+            total += threat['count']
+    context['threat_info'] = total
 
+    percents = []
+    for threat in threats:
+        if threat['type'] != "Normal":
+            percents.append((threat['count'], threat['count'] / total * 100 if total else 0))
+    context['threat_type_info'] = percents
+
+    new_rule_count = 0
     with open(FILE_EVENT_IMPORTANT, "r") as f:
-        events = []      
-        for line in list(csv.DictReader(f))[-10:]:
+        lines = list(csv.DictReader(f))
+        for line in lines:
+            if(line['event'].split('|')[0] == "new rule"):
+                new_rule_count += 1
+
+        events = []  
+        for line in lines[-10:]:
             event = {}
             e = line['event'].split('|')
             if(e[0] == "new rule"):
@@ -39,6 +69,8 @@ def indexContext():
         for idx, event in enumerate(events[::-1]):
             event['no'] = idx + 1
         context["events"] = events[::-1]
+    
+    context['rule_info'] = new_rule_count
 
     return context
 
@@ -67,9 +99,9 @@ def firewallLogContext(request):
             e = line['event'].split('|')
             if(e[0] in ["new rule", "remove rule", "match rule"]):
                 log['event'] = {"type":e[0], "rid":e[1]}
-                if e[0] != "match rule" and e[2] == "manual":
+                if e[0] != "match rule" and e[2] == "admin":
                     log['auto'] = False
-            elif(e[0] == "packet in"):
+            elif(e[0] == "packet in" or e[0] == "admin submit"):
                 log['event'] = {"type":e[0]}
             elif(e[0] == "alert"):
                 log['event'] = {"type":e[0], "attack_type":e[1]}
@@ -91,6 +123,29 @@ def idsLogContext(request):
         context['logs'] = list(csv.DictReader(f))[::-1]
     
     return context
+
+def adminLogContext(request):
+    context = sidebarContext(request)
+    with open(FILE_ADMIN_LOG, "r") as f:
+        logs = []
+        for line in list(csv.DictReader(f)):
+            log = {}
+            e = line['event'].split('|')
+            if(e[0] == "new rule" or e[0] == "edit rule"):
+                log['event'] = {"type":e[0], "over_rule_id":e[1], "rule_id":e[2], "s_ip":e[3], "s_port":e[4], "d_ip":e[5], "d_port":e[6], "action":e[7]}
+            elif(e[0] == "remove rule" or e[0] == "up rule"):
+                log['event'] = {"type":e[0], "rule_id":e[1]}
+            elif(e[0] == "edit ids rule"):
+                log['event'] = {"type":e[0], "label":e[1], "action":e[2]}
+
+            log['timestamp'] = line['timestamp']
+            log['time'] = str(datetime.datetime.now().year)[-2:] + "-" + log['timestamp'].split(' ')[0]
+            log['timestamp'] = log['timestamp'].split(' ')[1]
+            logs.append(log)
+        
+        context['logs'] = group(logs[::-1])     # group by timestamp
+    print(context['logs'])
+    return context        
 
 def firewallRuleContext(request):
     context = sidebarContext(request)
@@ -124,6 +179,16 @@ def trafficStatisticContext(request):
     
     return context
 
+def nodeStateContext(request):
+    context = sidebarContext(request)
+    context['switches'] = switches()
+
+    return context
+
+def systemTestContext(request):
+    context = sidebarContext(request)
+    return context
+
 def index(request):
     return render(request, 'core/index.html', indexContext())
 
@@ -132,6 +197,9 @@ def firewallLog(request):
 
 def idsLog(request):
     return render(request, 'core/ids_log.html', idsLogContext(request))
+
+def adminLog(request):
+    return render(request, 'core/admin_log.html', adminLogContext(request))
 
 def firewallRule(request):
     return render(request, 'core/firewall_rule.html', firewallRuleContext(request))
@@ -142,9 +210,23 @@ def idsRule(request):
 def trafficStatistic(request):
     return render(request, 'core/traffic_statistic.html', trafficStatisticContext(request))
 
+def nodeState(request):
+    return render(request, 'core/node_state.html', nodeStateContext(request))
+
+def systemTest(request):
+    return render(request, 'core/system_test.html', systemTestContext(request))
+
+from collections import defaultdict
+def group(logs):
+    result = defaultdict(list)
+    for log in logs:
+        result[log['time']].append(log)
+    return dict(result)
+
 import json
 def submitFirewallRule(request):
-    rules = json.loads(request.body.decode('utf-8'))
+    data = json.loads(request.body.decode('utf-8'))
+    rules = data['rules']
     t = timestamp()
     for rule in rules:
         if(rule[6] == "NOTIMESTAMP"):
@@ -155,13 +237,33 @@ def submitFirewallRule(request):
         f.write("id,s_ip,s_port,d_ip,d_port,action,timestamp,source\n")
         f.writelines([",".join(rule)+"\n" for rule in rules])
 
+    # tell firewall to apply this overwritten firewall.rule
+    send_alert()
+
+    # log edit records
+    records = data['records']
+    with open(FILE_ADMIN_LOG, "a")  as f:
+        f.writelines("|".join(record)+","+t+"\n" for record in records)
+    
     return HttpResponse(t)
 
+import socket
+def send_alert():
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    sock.connect(SOCKFILE_RULE_ALERT)
+    sock.send("anything-you-need-to-tell-firewall".encode())
+
 def submitIDSRule(request):
-    rules = json.loads(request.body.decode('utf-8'))
+    data = json.loads(request.body.decode('utf-8'))
+    rules = data['rules']
     with open(FILE_IDS_RULE, "w") as f:
         f.write("label,action\n")
         f.writelines([",".join(rule)+"\n" for rule in rules])
+
+    records = data['records']
+    t = timestamp()
+    with open(FILE_ADMIN_LOG, "a")  as f:
+        f.writelines("edit ids rule|"+"|".join(record)+","+t+"\n" for record in records)
 
     return HttpResponse("")
 
@@ -178,8 +280,8 @@ def statistic():
     labels = [pkt['label'] for pkt in pkts]
     counter = Counter(labels)
 
-    colors = ["#00a65a", "#dc3545", "#dc3545", "#dc3545", "#dc3545"]
-    for t in ['SAFE', 'DOS', 'R2L', 'U2R', 'PROBING']:
+    colors = ["#00a65a", "#dc3545", "#dc3545", "#dc3545", "#dc3545", "#dc3545", "#dc3545"]
+    for t in ['Normal', 'Fuzzers', 'DoS', 'Exploits', 'Generic', 'Reconnaissance', 'Shellcode']:
         if t in counter.keys():
             threat = {"type":t, "count":counter[t], "percent":format(counter[t] / len(labels) *100, ".1f"), "color":colors.pop(0)}
         else:
@@ -187,3 +289,54 @@ def statistic():
         threats.append(threat)
 
     return pkts, threats
+
+import urllib3
+def switches():
+    http = urllib3.PoolManager()
+
+    switches = {}
+    try:
+        url = "http://127.0.0.1:8080/stats/switches"
+        switch_ids = json.loads(http.request("GET", url).data.decode('utf-8'))
+
+        url = "http://127.0.0.1:8080/stats/flow/"
+        for sid in switch_ids:
+            switches[sid] = json.loads(http.request("GET", url + str(sid)).data.decode('utf-8'))[str(sid)]
+
+        for sid in switches:
+            switches[sid] = sorted(switches[sid], key = lambda x:x['priority'], reverse = True)
+    except:
+        pass
+    
+    return switches
+
+import subprocess
+def test(request, test_id):
+    global mininet, ids
+    if(test_id == 1):
+        mininet.stdin.write(INTERACT_SHELL_TEST1.encode())
+        mininet.stdin.flush()
+    elif(test_id == 2):
+        mininet.stdin.write(INTERACT_SHELL_TEST2.encode())
+        mininet.stdin.flush()
+    
+    return HttpResponse("")
+
+mininet = None
+ids = None
+def start(request):
+    global mininet, ids
+    if(mininet):
+        mininet.stdin.write("exit".encode())
+        mininet.communicate()
+    if(ids):
+        ids.kill()
+    mininet = subprocess.Popen(SHELL_START_MININET, stdin=subprocess.PIPE, shell=True)
+    ids = subprocess.Popen(SHELL_START_IDS, shell=True)
+
+    return HttpResponse("")
+
+def reset(request):
+    subprocess.run(SHELL_RESET, shell=True)
+    start(request)
+    return HttpResponse("")

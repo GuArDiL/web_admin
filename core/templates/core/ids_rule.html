@@ -39,13 +39,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a class="nav-link" href="../" role="button" id="home"><i class="fas fa-home"></i></a>
       </li>
     </ul>
-
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href = "javascript:void(0)" role="button"><i class="fas fa-sign-out-alt"></i></a>
-      </li>
-    </ul>
   </nav>
   <!-- /.navbar -->
 
@@ -189,7 +182,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
                           <td style="vertical-align: middle;"></td>
                         {% endif %}
                         <td style="vertical-align: middle;"><b>{{ threat.count }}</b></td>
-                        <td style="vertical-align: middle;"></td>
+                        {% if threat.type == "Normal" %}
+                          <td style="vertical-align: middle;">正常流量</td>
+                        {% elif threat.type == "Fuzzers" %}
+                          <td style="vertical-align: middle;">恶意流量，企图通过随机生成的数据挂起程序或网络</td>
+                        {% elif threat.type == "DoS" %}
+                          <td style="vertical-align: middle;">恶意流量，企图中断或挂起网络中的主机对外提供的服务，让被服务用户无法正常访问服务器或所需的网络资源</td>
+                        {% elif threat.type == "Exploits" %}
+                          <td style="vertical-align: middle;">恶意流量，攻击者利用操作系统或软件的安全缺陷发起攻击</td>
+                        {% elif threat.type == "Generic" %}
+                          <td style="vertical-align: middle;">恶意流量，针对块密码的通用攻击，例如字典或暴力搜索</td>
+                        {% elif threat.type == "Reconnaissance" %}
+                          <td style="vertical-align: middle;">恶意流量，以收集信息为目的的探测流量，例如端口扫描</td>
+                        {% elif threat.type == "Shellcode" %}
+                          <td style="vertical-align: middle;">恶意流量，载荷中包含漏洞利用所需的代码片段</td>
+                        {% else %}
+                          <td></td>
+                        {% endif %}
                         {% if threat.action != "NOACTION" %}
                           <td style="vertical-align: middle;"><a href="javascript:void(0)"  class="fas fa-edit edit-rule" data-toggle="modal" data-target="#modal-edit-rule" style="margin:0 .5rem 0 0"><small> 编辑</small></a></td>
                         {% else %}
@@ -285,14 +294,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="{% static "dist/js/adminlte.min.js" %}"></script>
 <!-- toastr -->
 <script src="{% static "plugins/toastr/toastr.min.js" %}"></script>
-<!-- inputmask -->
-<script src="{% static "plugins/inputmask/min/jquery.inputmask.bundle.min.js" %}"></script>
 
 <!-- core -->
 <script src="{% static "core.js" %}"></script>
 
 <script>
+  var edit_records = [];
   $(function() {
+    edit_records = [];
     toastr.options = {positionClass:"toast-bottom-right",
                       timeOut: "1500"};
   });
@@ -302,7 +311,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     $.ajax({
       type: "POST",
       url: "/core/submit/ids_rule/",
-      data: JSON.stringify(getIDSRuleTableData()),
+      data: JSON.stringify({'rules':getIDSRuleTableData(), 'records':edit_records}),
       beforeSend: function(xhr, settings) {
         xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
       },
@@ -375,6 +384,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     
     $('#modal-edit-rule').modal('hide');
     $('#submit-modification').removeAttr('disabled');
+    edit_records.push([rule_label, action]);
     toastr.info("编辑规则成功，本次修改尚未提交");
   });
 </script>
