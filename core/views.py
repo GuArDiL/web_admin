@@ -267,9 +267,13 @@ def submitIDSRule(request):
 
     return HttpResponse("")
 
-import time
+import datetime
 def timestamp():
-    return time.strftime("%m-%d %H:%M:%S", time.localtime())
+    # time.localtime() and datetime.now() work well when mininet and ids are launched from terminal
+    # but something goes wrong if launched from web_admin by calling subprocess()
+    # the fetched time will be the utc rather than utc+8 time in the latter case
+    # so covert utc to utc+8 manually here (also in utils.py whose timestamp() would be imported by ids)
+    return (datetime.datetime.utcnow() + datetime.timedelta(hours=8)).strftime("%m-%d %H:%M:%S")
 
 from collections import Counter
 def statistic():
